@@ -1,0 +1,25 @@
+# Dependências
+node_modules/
+
+# Arquivos de ambiente
+.env
+.env.local
+.env.production
+
+# Build do Vite
+dist/
+dist-ssr/
+
+# Cache
+.vite/
+*.local
+
+# Logs
+*.log
+
+# Editor
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
