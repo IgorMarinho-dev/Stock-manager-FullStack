@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import Dashboard from './components/Dashboard';
-import ProductList from './components/ProductList';
-import ProductForm from './components/ProductForm';
-import CategoryManager from './components/CategoryManager';
-import StockMovementForm from './components/StockMovementForm';
+import Dashboard from './components/Dashboard.tsx';
+import ProductList from './components/ProductList.tsx';
+import ProductForm from './components/ProductForm.tsx';
+import CategoryManager from './components/CategoryManager.tsx';
+import StockMovementForm from './components/StockMovementForm.tsx';
 import type { Product } from './types';
 import './App.css';
 
