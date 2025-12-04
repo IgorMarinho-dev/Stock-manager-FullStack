@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { getProducts, createStockMovement } from '../services/api';
+import { getProducts, createStockMovement, getStockMovements } from '../services/api';
 import { stockMovementFormSchema } from '../validators/product.validator';
-import type { Product, StockMovementFormData } from '../types';
+import type { Product, StockMovement, StockMovementFormData } from '../types';
 
 interface Props {
   onSuccess: () => void;
@@ -10,6 +10,7 @@ interface Props {
 
 export default function StockMovementForm({ onSuccess, onCancel }: Props) {
   const [products, setProducts] = useState<Product[]>([]);
+  const [movements, setMovements] = useState<StockMovement[]>([]);
   const [formData, setFormData] = useState<StockMovementFormData>({
     productId: '',
     type: 'IN',
@@ -21,6 +22,7 @@ export default function StockMovementForm({ onSuccess, onCancel }: Props) {
 
   useEffect(() => {
     loadProducts();
+    loadMovements();
   }, []);
 
   const loadProducts = async () => {
@@ -29,6 +31,15 @@ export default function StockMovementForm({ onSuccess, onCancel }: Props) {
       setProducts(data);
     } catch (error) {
       console.error('Erro ao carregar produtos:', error);
+    }
+  };
+
+  const loadMovements = async () => {
+    try {
+      const data = await getStockMovements();
+      setMovements(data);
+    } catch (error) {
+      console.error('Erro ao carregar movimentações:', error);
     }
   };
 
@@ -41,6 +52,19 @@ export default function StockMovementForm({ onSuccess, onCancel }: Props) {
       setLoading(true);
 
       await createStockMovement(validatedData);
+      
+      // Limpar formulário
+      setFormData({
+        productId: '',
+        type: 'IN',
+        quantity: 0,
+        reason: '',
+      });
+      
+      // Recarregar movimentações
+      await loadMovements();
+      
+      alert('Movimentação criada com sucesso!');
       onSuccess();
     } catch (error: any) {
       if (error.name === 'ZodError') {
@@ -143,6 +167,46 @@ export default function StockMovementForm({ onSuccess, onCancel }: Props) {
           </button>
         </div>
       </form>
+
+      {movements.length > 0 && (
+        <div style={{ marginTop: '2rem' }}>
+          <h3>Movimentações Recentes</h3>
+          <div className="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Produto</th>
+                  <th>Tipo</th>
+                  <th>Quantidade</th>
+                  <th>Motivo</th>
+                  <th>Data</th>
+                </tr>
+              </thead>
+              <tbody>
+                {movements.map((mov) => (
+                  <tr key={mov.id}>
+                    <td>{mov.product?.name}</td>
+                    <td>
+                      <span style={{ 
+                        padding: '0.25rem 0.5rem',
+                        borderRadius: '4px',
+                        backgroundColor: mov.type === 'IN' ? '#d1fae5' : '#fee2e2',
+                        color: mov.type === 'IN' ? '#065f46' : '#991b1b',
+                        fontWeight: 'bold'
+                      }}>
+                        {mov.type === 'IN' ? '↑ Entrada' : '↓ Saída'}
+                      </span>
+                    </td>
+                    <td>{mov.quantity}</td>
+                    <td>{mov.reason || '-'}</td>
+                    <td>{new Date(mov.createdAt).toLocaleString('pt-BR')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
